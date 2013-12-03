@@ -17,6 +17,23 @@ class Piece
     new_piece
   end
   
+  def has_valid_moves?
+    diffs = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+      [-2, -2],
+      [-2, 2],
+      [2, -2],
+      [2, 2]
+      ]
+    diffs.each do |diff|
+      possible_move = [@position[0] + diff[0], @position[1], diff[1]]
+      return true if valid_move_seq?([possible_move])
+    end
+    false
+  end
   def in_between(target)
     @board.grid[(@position[0] + target[0]) / 2][(@position[1] + target[1]) / 2]
   end
