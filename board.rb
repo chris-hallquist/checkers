@@ -37,6 +37,18 @@ class Board
   #   puts "  0 1 2 3 4 5 6 7 "
   # end
   
+  def dup
+    new_board = Board.new
+    @grid.each_with_index do |row, row_i|
+      row.each_with_index do |square, col_i|
+        if square
+          new_board.grid[row_i][col_i] = square.dup(new_board)
+        end
+      end
+    end
+    new_board
+  end
+  
   def setup
     @grid.each_with_index do |row, row_i|
       row.each_with_index do |square, col_i|
@@ -51,9 +63,9 @@ class Board
     end 
   end
   
-  def simple_display
+  def simp_display
     @grid.each do |row|
-      p row.map { |square| square == nil ? "_" : square.color.to_s[0] }
+      p row.map { |square| square == nil ? "_" : square.simp_render }
     end
     nil
   end

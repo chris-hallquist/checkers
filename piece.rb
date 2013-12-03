@@ -1,14 +1,20 @@
 require_relative "board"
 
 class Piece
-  attr_reader :board, :color, :king
-  attr_accessor :position
+  attr_reader :board, :color
+  attr_accessor :king, :position
   
   def initialize(board, color, position)
     @board = board
     @color = color
     @king = false
     @position = position
+  end
+  
+  def dup(board)
+    new_piece = Piece.new(board, @color, @position)
+    new_piece.king = true if @king
+    new_piece
   end
   
   def in_between(target)
@@ -49,6 +55,19 @@ class Piece
     promote_me_maybe
   end
   
+  def perform_moves(move_sequence)
+    raise InvalidMoveError unless valid_move_seq?(move_sequence)
+    perform_moves!(move_sequence)
+  end
+  
+  def perform_moves!(move_sequence)
+    unless move_sequence.length == 1 && perform_slide(move_sequence[0])
+      move_sequence.each do |move| 
+        raise InvalidMoveError unless perform_jump(move) 
+      end
+    end
+  end
+  
   def perform_slide(target)    
     return false unless on_board_and_empty?(target)
         
@@ -62,19 +81,39 @@ class Piece
   end
   
   def promote_me_maybe
-    @king = true if (@color == :black && @position == 7)
-    @king = true if (@color == :red && @position == 0)
+    @king = true if (@color == :black && @position[0] == 7)
+    @king = true if (@color == :red && @position[0] == 0)
   end
   
-  def to_s
-    if color == :black
-      @king ? return "♔" : return "♙"
-    else
-      @king ? return "♚" : return "♟"
-    end
-  end
+  # def to_s
+  #   if color == :black
+  #   @king ? return "♔" : return "♙"
+  #   else
+  #     @king ? return "♚" : return "♟"
+  #   end
+  # end
   
   def remove
     @board.grid[@position[0]][@position[1]] = nil
   end
+  
+  def simp_render
+    render = @color.to_s[0]
+    render.upcase! if @king
+    render
+  end
+  
+  def valid_move_seq?(move_sequence)
+    test_board = @board.dup
+    begin
+      test_board.grid[@position[0]][@position[1]].perform_moves!(move_sequence)
+    rescue InvalidMoveError
+      return false
+    else
+      return true
+    end
+  end
+end
+
+class InvalidMoveError < StandardError
 end
